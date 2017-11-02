@@ -1,0 +1,9 @@
+services:
+  image: mongo:3.4.10-jessie
+  container_name: "mongodb"
+  ports: 
+    - "27017:27017"
+  environment:
+    - MONGO_INITDB_ROOT_USERNAME=admin
+    - MONGO_INITDB_ROOT_PASSWORD=admin
+    - MONGODB_DBNAME=testdb
