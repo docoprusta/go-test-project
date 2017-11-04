@@ -6,4 +6,5 @@ services:
   environment:
     - MONGO_INITDB_ROOT_USERNAME=admin
     - MONGO_INITDB_ROOT_PASSWORD=admin
-    - MONGODB_DBNAME=testdb
+    - MONGO_HOST=127.0.0.1
+    - MONGO_HOST=testdb

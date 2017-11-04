@@ -6,15 +6,16 @@ import (
 )
 
 type MongoConnector struct {
-	mongodbRootUsername string
-	mongodbRootPassword string
-	mongodbHost string
+	username string
+	password string
+	host string
+	database string
 }
 
-var mongoConnector MongoConnector
+var MongoConnectorVar MongoConnector
 
 func getEnv(environmentVariableName string, defaultValue string) string {
-	environmentVariableValue := os.Getenv("MONGO_INITDB_ROOT_USERNAME")
+	environmentVariableValue := os.Getenv(environmentVariableName)
 	if environmentVariableValue == "" {
 		environmentVariableValue = defaultValue
 	}
@@ -22,16 +23,27 @@ func getEnv(environmentVariableName string, defaultValue string) string {
 }
 
 func (mongoConnector MongoConnector) initMongoValues() {
-	mongoConnector.mongodbRootUsername = getEnv("MONGO_INITDB_ROOT_USERNAME", "admin")
-	mongoConnector.mongodbRootPassword = getEnv("MONGO_INITDB_ROOT_PASSWORD", "admin")
-	mongoConnector.mongodbHost = getEnv("MONGO_HOST", "127.0.0.1")
+	mongoConnector.username = getEnv("MONGO_INITDB_ROOT_USERNAME", "admin")
+	mongoConnector.password = getEnv("MONGO_INITDB_ROOT_PASSWORD", "admin")
+	mongoConnector.host = getEnv("MONGO_HOST", "127.0.0.1")
+	mongoConnector.database = getEnv("MONGO_DATABASE", "testdb")
 }
 
 func (mongoConnector MongoConnector) getSession() (*mgo.Session, error) {
-	session, err := mgo.Dial(mongoConnector.mongodbHost)
+
+	cred := &mgo.Credential{
+		Username:  "admin",
+		Password:  "admin",
+		Mechanism: "SCRAM-SHA-1",
+		Source:    "admin",
+	}
+	
+	session, err := mgo.Dial(mongoConnector.host)
+	err = session.Login(cred)
+
 	return session, err
 }
 
 func init() {
-	mongoConnector.initMongoValues()
+	MongoConnectorVar.initMongoValues()
 }

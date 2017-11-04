@@ -4,15 +4,33 @@ type Book struct {
     ISBN    string   `json:"isbn"`
     Title   string   `json:"title"`
     Authors []string `json:"authors"`
-    Price   int   `json:"price"`
+    Price   float32   `json:"price"`
 }
 
-func (mongoConnector MongoConnector) insertBook(book Book) {
+const booksCollectionName string = "books" 
+
+func (mongoConnector MongoConnector) InsertBook(book *Book) {
 	session, err := mongoConnector.getSession()
+	defer session.Close()
 
 	if err != nil {
 		panic(err)
 	}
-	c := session.DB("test").C("people")
-	err = c.Insert(&Book{ISBN: "12345", Title: "asd", Authors: []string{"",""}, Price: 45})
+
+	c := session.DB(MongoConnectorVar.database).C(booksCollectionName)
+	err = c.Insert(book)
+
+}
+
+func (mongoConnector MongoConnector) FindBook(book *Book) {
+	session, err := mongoConnector.getSession()
+	defer session.Close()
+
+	if err != nil {
+		panic(err)
+	}
+
+	c := session.DB(MongoConnectorVar.database).C(booksCollectionName)
+	err = c.Insert(book)
+
 }
