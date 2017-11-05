@@ -12,7 +12,7 @@ type MongoConnector struct {
 	database string
 }
 
-var MongoConnectorVar MongoConnector
+// var MongoConnectorVar MongoConnector
 
 func getEnv(environmentVariableName string, defaultValue string) string {
 	environmentVariableValue := os.Getenv(environmentVariableName)
@@ -22,14 +22,14 @@ func getEnv(environmentVariableName string, defaultValue string) string {
 	return environmentVariableValue
 }
 
-func (mongoConnector MongoConnector) initMongoValues() {
+func (mongoConnector MongoConnector) InitMongoValues() {
 	mongoConnector.username = getEnv("MONGO_INITDB_ROOT_USERNAME", "admin")
 	mongoConnector.password = getEnv("MONGO_INITDB_ROOT_PASSWORD", "admin")
 	mongoConnector.host = getEnv("MONGO_HOST", "127.0.0.1")
 	mongoConnector.database = getEnv("MONGO_DATABASE", "testdb")
 }
 
-func (mongoConnector MongoConnector) getSession() (*mgo.Session, error) {
+func (mongoConnector MongoConnector) getSession() *mgo.Session {
 
 	cred := &mgo.Credential{
 		Username:  "admin",
@@ -39,11 +39,16 @@ func (mongoConnector MongoConnector) getSession() (*mgo.Session, error) {
 	}
 	
 	session, err := mgo.Dial(mongoConnector.host)
+
+	if err != nil {
+		panic(err)
+	}
+
 	err = session.Login(cred)
 
-	return session, err
-}
+	if err != nil {
+		panic(err)
+	}
 
-func init() {
-	MongoConnectorVar.initMongoValues()
+	return session
 }
