@@ -1,42 +1,33 @@
 package routes
 
 import (
+	"github.com/gorilla/mux"
+	"test-webapp/models"
+	"gopkg.in/mgo.v2/bson"
+	"test-webapp/controllers"
+	"encoding/json"
     "net/http"
-    "github.com/gorilla/mux"
 )
 
-type Route struct {
-    Name        string
-    Method      string
-    Pattern     string
-    HandlerFunc http.HandlerFunc
+var mongoConnector controllers.MongoConnector
+
+func GetBooks(writer http.ResponseWriter, request *http.Request) {
+    mongoConnector.InitMongoValues()
+    writer.Header().Set("Content-Type", "application/json; charset=UTF-8")
+    books := mongoConnector.FindBooks(bson.M{})
+    json.NewEncoder(writer).Encode(books)
 }
 
-func NewRouter() *mux.Router {
+func GetBook(writer http.ResponseWriter, request *http.Request) {
+    var books []models.Book
 
-    router := mux.NewRouter().StrictSlash(true)
-    for _, route := range routes {
-        router.
-            Methods(route.Method).
-            Path(route.Pattern).
-            Name(route.Name).
-            Handler(route.HandlerFunc)
+    mongoConnector.InitMongoValues()
+    params := mux.Vars(request)
+    for _, item := range books {
+        if item.Id == params["id"] {
+            json.NewEncoder(writer).Encode(item)
+            return
+        }
     }
-
-    return router
-}
-
-var routes = []Route{
-    // Route{
-    //     "TodoIndex",
-    //     "GET",
-    //     "/books",
-    //     TodoIndex,
-    // },
-    // Route{
-    //     "TodoShow",
-    //     "GET",
-    //     "/books/{bookId}",
-    //     TodoShow,
-    // },
+    json.NewEncoder(writer).Encode(&models.Book{})
 }
