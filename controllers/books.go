@@ -18,35 +18,35 @@ func BooksObjectIdsToString(books []models.Book) []models.Book {
 	return newBooks
 }
 
-func (mongoConnector MongoConnector) InsertBook(book *models.Book) {
+func BookObjectIdToString(book *models.Book) {
+	book.Id = hex.EncodeToString([]byte(book.Id))
+}
+
+func (mongoConnector MongoConnector) InsertBook(book *models.Book) error {
 	session := mongoConnector.getSession()
 	defer session.Close()
 
 	c := session.DB(mongoConnector.database).C(booksCollectionName)
 	err := c.Insert(book)
 
-	if err != nil {
-		panic(err)
-	}
+	return err
 }
 
-func (mongoConnector MongoConnector) FindBook(query bson.M) models.Book {
+func (mongoConnector MongoConnector) FindBook(query bson.M) (models.Book, error) {
 	session := mongoConnector.getSession()
 	defer session.Close()
 
-	fetchedBook := models.Book{}
+	var fetchedBook models.Book
 
 	c := session.DB(mongoConnector.database).C(booksCollectionName)
 	err := c.Find(query).One(&fetchedBook)
 
-	if err != nil {
-		panic(err)
-	}
+	BookObjectIdToString(&fetchedBook)
 
-	return fetchedBook
+	return fetchedBook, err
 }
 
-func (mongoConnector MongoConnector) FindBooks(query bson.M) []models.Book {
+func (mongoConnector MongoConnector) FindBooks(query bson.M) ([]models.Book, error) {
 	session := mongoConnector.getSession()
 	defer session.Close()
 
@@ -55,33 +55,25 @@ func (mongoConnector MongoConnector) FindBooks(query bson.M) []models.Book {
 	c := session.DB(mongoConnector.database).C(booksCollectionName)
 	err := c.Find(query).All(&fetchedBooks)
 
-	if err != nil {
-		panic(err)
-	}
-
-	return BooksObjectIdsToString(fetchedBooks)
+	return BooksObjectIdsToString(fetchedBooks), err
 }
 
-func (mongoConnector MongoConnector) UpdateBook(query bson.M, change bson.M) {
+func (mongoConnector MongoConnector) UpdateBook(query bson.M, change bson.M) error {
 	session := mongoConnector.getSession()
 	defer session.Close()
 
 	c := session.DB(mongoConnector.database).C(booksCollectionName)
 
 	err := c.Update(query, change)
-	if err != nil {
-		panic(err)
-	}
+	return err
 }
 
-func (mongoConnector MongoConnector) RemoveBook(query bson.M) {
+func (mongoConnector MongoConnector) RemoveBook(query bson.M) error {
 	session := mongoConnector.getSession()
 	defer session.Close()
 
 	c := session.DB(mongoConnector.database).C(booksCollectionName)
 
 	err := c.Remove(query)
-	if err != nil {
-		panic(err)
-	}
+	return err
 }
